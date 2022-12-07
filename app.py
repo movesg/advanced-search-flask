@@ -94,8 +94,8 @@ def filter_by_location(result, search_location):
 def convert_json_to_text(list):
     listreturn = []
     for item in list:
-        x = item.replace("/xa0", " ")
-        listreturn.append(x)
+        x = item.replace("\xa0", "")
+        listreturn = x.split(",")
     return listreturn
         
 
