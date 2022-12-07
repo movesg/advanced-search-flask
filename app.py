@@ -32,7 +32,7 @@ def format_data(result):
     }
     return format_result
 
-def searchby_pqe():
+def searchby_pqe(search_pqe):
     global initial_search_results
     for pqe in search_pqe:
         result = table_candidates.all(formula=fm.match({"PQE": pqe}))
@@ -40,7 +40,7 @@ def searchby_pqe():
         initial_search_results += result
 
 
-def searchby_job():
+def searchby_job(search_jobtags):
     global initial_search_results
     for job in search_jobtags:
         result = table_candidates.all(
@@ -49,7 +49,7 @@ def searchby_job():
         initial_search_results += result
 
 
-def searchby_location():
+def searchby_location(search_location):
     global initial_search_results
     for location in search_location:
         result = table_candidates.all(formula=fm.FIND(fm.STR_VALUE(location), fm.FIELD("Location")))
@@ -103,11 +103,11 @@ def return_response():
     search_jobtags = request.form.getlist('jobtags')
     search_location = request.form.getlist('location')
     if (len(search_pqe) > 0):  # if search_pqe exists
-        searchby_pqe()
+        searchby_pqe(search_pqe)
     elif (len(search_jobtags) > 0):
-        searchby_job()
+        searchby_job(search_jobtags)
     elif (len(search_location) > 0):
-        searchby_location()
+        searchby_location(search_location)
 
     # print((filter_pqe_results))
     print(len(initial_search_results))
