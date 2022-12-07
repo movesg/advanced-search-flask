@@ -65,8 +65,6 @@ def filter_by_pqe(result, search_pqe):
             # print(len(search_jobtags))
             pqe_match = all(n in pqe for n in search.split())
     return pqe_match
-
-
 def filter_by_job(result, search_jobtags):
     job_tags = result.get("fields").get("Job Tags")  # get job tag from result0
     if (len(search_jobtags) == 0):
@@ -78,8 +76,6 @@ def filter_by_job(result, search_jobtags):
             # print(len(search_jobtags))
             job_match = all(n in job_tags for n in search.split())
     return job_match
-
-
 def filter_by_location(result, search_location):
 
     location_tags = result.get("fields").get("Location")  # get location tag from result0
@@ -94,14 +90,16 @@ def filter_by_location(result, search_location):
 def convert_json_to_text(list):
     listreturn = []
     for item in list:
-        x = item.replace("\xa0", "")
-        listreturn = x.split(",")
+        x = item.replace("/xa0", " ")
+        listreturn.append(x)
     return listreturn
         
 
 @app.route('/my_webhook', methods=['POST'])
 def return_response():
+    sb = ""
     initial_search_results = []
+
     search_pqe = request.form.getlist('PQE')
     print(search_pqe)
     search_pqe = convert_json_to_text(search_pqe)
@@ -119,11 +117,14 @@ def return_response():
 
     if (len(search_pqe) > 0):  # if search_pqe exists
         initial_search_results += searchby_pqe(search_pqe)
+        sb = "pqe"
         print("search pqe")
     elif (len(search_jobtags) > 0):
+        sb = "job"
         print("search job")
         initial_search_results += searchby_job(search_jobtags)
     elif (len(search_location) > 0):
+        sb = "loc"
         print("search loc")
         initial_search_results += searchby_location(search_location)
 
@@ -140,14 +141,14 @@ def return_response():
     for result0 in initial_search_results:  # for each result
         i += 1
         pqe_match = filter_by_pqe(result0, search_pqe)
-        if (pqe_match):
+        if (pqe_match or sb == "pqe"):
 
             job_match = filter_by_job(result0, search_jobtags)
-            if (job_match):  # if no jobtags or contains jobtag
+            if (job_match or sb == "job"):  # if no jobtags or contains jobtag
                 # print("job match")
 
                 location_match = filter_by_location(result0, search_location)
-                if (location_match):  # if no location tag or contains loc tag
+                if (location_match or sb == "loc"):  # if no location tag or contains loc tag
 
                     data = format_data(result0)
                     correct_results.append(data)
