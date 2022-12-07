@@ -33,25 +33,27 @@ def format_data(result):
     return format_result
 
 def searchby_pqe(search_pqe):
+    result = []
     for pqe in search_pqe:
-        result = table_candidates.all(formula=fm.match({"PQE": pqe}))
+        result.append(table_candidates.all(formula=fm.match({"PQE": pqe})))
         # print("results: "+str(len(result)))
-        return result
+    return result
 
 
 def searchby_job(search_jobtags):
+    result = []
     for job in search_jobtags:
-        result = table_candidates.all(
-            formula=fm.FIND(fm.STR_VALUE("Data Privacy & Cybersecurity"), fm.FIELD("Job Tags")))
+        result.append(table_candidates.all(formula=fm.FIND(fm.STR_VALUE(job), fm.FIELD("Job Tags"))))
         # print("results: "+str(len(result)))
-        return result
+    return result
 
 
 def searchby_location(search_location):
+    result = []
     for location in search_location:
-        result = table_candidates.all(formula=fm.FIND(fm.STR_VALUE(location), fm.FIELD("Location")))
+        result.append(table_candidates.all(formula=fm.FIND(fm.STR_VALUE(location), fm.FIELD("Location"))))
         # print("results: "+str(len(result)))
-        return result
+    return result
 
 
 def filter_by_pqe(result, search_pqe):
