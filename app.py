@@ -91,7 +91,9 @@ def filter_by_location(result, search_location):
         for search1 in search_location:  # for each location search keyword
             match = all(m in location_tags for m in search1.split())
     return match
-
+def convert_json_to_text(list):
+    for item in list:
+        x = str.replace("/xa0", " ")
 
 
 @app.route('/my_webhook', methods=['POST'])
@@ -99,11 +101,20 @@ def return_response():
     initial_search_results = []
     search_pqe = request.form.getlist('PQE')
     print(search_pqe)
+    search_pqe = convert_json_to_text(search_pqe)
+    print(search_pqe)
+
     search_jobtags = request.form.getlist('jobtags')
     print(search_jobtags)
+    search_jobtags = convert_json_to_text(search_jobtags)
+    print(search_jobtags)
+
     search_location = request.form.getlist('location')
     print(search_location)
+    search_location = convert_json_to_text(search_location)
+    print(search_location)
 
+    x = str.replace
     if (len(search_pqe) > 0):  # if search_pqe exists
         initial_search_results += searchby_pqe(search_pqe)
         print("search pqe")
