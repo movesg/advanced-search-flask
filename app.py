@@ -92,9 +92,12 @@ def filter_by_location(result, search_location):
             match = all(m in location_tags for m in search1.split())
     return match
 def convert_json_to_text(list):
+    listreturn = []
     for item in list:
-        x = str.replace("/xa0", " ")
-
+        x = item.replace("/xa0", " ")
+        listreturn.append(x)
+    return listreturn
+        
 
 @app.route('/my_webhook', methods=['POST'])
 def return_response():
