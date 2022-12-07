@@ -117,7 +117,6 @@ def return_response():
     search_location = convert_json_to_text(search_location)
     print(search_location)
 
-    x = str.replace
     if (len(search_pqe) > 0):  # if search_pqe exists
         initial_search_results += searchby_pqe(search_pqe)
         print("search pqe")
