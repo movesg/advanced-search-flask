@@ -98,11 +98,11 @@ def filter_by_location(result, search_location):
 def return_response():
     initial_search_results = []
     search_pqe = request.form.getlist('PQE')
-    print("pqe")
+    print(search_pqe)
     search_jobtags = request.form.getlist('jobtags')
-    print("jobtag")
+    print(search_jobtags)
     search_location = request.form.getlist('location')
-    print("location")
+    print(search_location)
 
     if (len(search_pqe) > 0):  # if search_pqe exists
         initial_search_results += searchby_pqe(search_pqe)
