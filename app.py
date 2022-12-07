@@ -35,7 +35,7 @@ def format_data(result):
 def searchby_pqe(search_pqe):
     result = []
     for pqe in search_pqe:
-        result.append(table_candidates.all(formula=fm.match({"PQE": pqe})))
+        result+=(table_candidates.all(formula=fm.match({"PQE": pqe})))
         # print("results: "+str(len(result)))
     return result
 
@@ -43,7 +43,7 @@ def searchby_pqe(search_pqe):
 def searchby_job(search_jobtags):
     result = []
     for job in search_jobtags:
-        result.append(table_candidates.all(formula=fm.FIND(fm.STR_VALUE(job), fm.FIELD("Job Tags"))))
+        result+=(table_candidates.all(formula=fm.FIND(fm.STR_VALUE(job), fm.FIELD("Job Tags"))))
         # print("results: "+str(len(result)))
     return result
 
@@ -51,7 +51,7 @@ def searchby_job(search_jobtags):
 def searchby_location(search_location):
     result = []
     for location in search_location:
-        result.append(table_candidates.all(formula=fm.FIND(fm.STR_VALUE(location), fm.FIELD("Location"))))
+        result+=(table_candidates.all(formula=fm.FIND(fm.STR_VALUE(location), fm.FIELD("Location"))))
         # print("results: "+str(len(result)))
     return result
 
@@ -90,6 +90,11 @@ def filter_by_location(result, search_location):
             match = all(m in location_tags for m in search1.split())
     return match
 def convert_json_to_text(list):
+    listreturn = []
+    for item in list:
+        x = item.replace("/xa0", " ")
+        listreturn.append(x)
+    return listreturn
     listreturn = []
     for item in list:
         x = item.replace("/xa0", " ")
