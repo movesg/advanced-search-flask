@@ -1,6 +1,6 @@
-name: sample-flask
+name: advanced-search-flask
 services:
 - name: web
   github:
-    repo: digitalocean/sample-flask
+    repo: movesg/advanced-search-flask
     branch: main
