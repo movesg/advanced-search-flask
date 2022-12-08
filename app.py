@@ -87,7 +87,7 @@ def return_response():
 
     correct_results = search_matched_results(search_pqe,search_jobtags,search_location)
 
-    print("# RESULTS FOUND: " + str(len(correct_results))+"\n---------------HAHAHA")
+    print("# RESULTS FOUND: " + str(len(correct_results))+"\n---------------")
 
     print("POSTING TO AIRTABLE...")
     table_post.batch_create(correct_results, typecast=True)
