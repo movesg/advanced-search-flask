@@ -55,7 +55,7 @@ def search_matched_results(search_pqe,search_jobtags,search_location):
     for pqe in search_pqe:
         for job in search_jobtags:
             for loc in search_location:
-                Formula = fm.AND(fm.FIND(fm.STR_VALUE(pqe), fm.FIELD("PQE")),fm.AND(fm.FIND(fm.STR_VALUE(job),fm.FIELD("Job Tags")),fm.FIND(fm.STR_VALUE(loc),fm.FIELD("Location"))))
+                Formula = fm.AND(fm.match({"PQE": pqe}),fm.AND(fm.FIND(fm.STR_VALUE(job),fm.FIELD("Job Tags")),fm.FIND(fm.STR_VALUE(loc),fm.FIELD("Location"))))
                 list_results += table_candidates.all(formula=Formula)
     list_results=format_data(list_results)
     return list_results
@@ -67,7 +67,7 @@ def return_response():
     print("____________SEARCH STARTED___________")
     correct_results=[]
 
-    print("KEYWORD SEARCHES: \n---------------\n")
+    print("KEYWORD SEARCHES: \n---------------")
     search_pqe = request.form.getlist('PQE')
     print(search_pqe)
     search_pqe = convert_json_to_text(search_pqe)
@@ -83,11 +83,11 @@ def return_response():
     search_location = convert_json_to_text(search_location)
     print(search_location)
 
-    print("-----------\nGETTING RESULTS: \n------------------\n")
+    print("------------------\nGETTING RESULTS: \n------------------\n")
 
     correct_results = search_matched_results(search_pqe,search_jobtags,search_location)
 
-    print("# RESULTS FOUND: " + str(len(correct_results)))
+    print("# RESULTS FOUND: " + str(len(correct_results))+"\n---------------HAHAHA")
 
     print("POSTING TO AIRTABLE...")
     table_post.batch_create(correct_results, typecast=True)
