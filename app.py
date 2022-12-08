@@ -117,14 +117,15 @@ def return_response():
     search_location = convert_json_to_text(search_location)
     print(search_location)
 
-    if (len(search_pqe) > 0):  # if search_pqe exists
-        initial_search_results += searchby_pqe(search_pqe)
-        sb = "pqe"
-        print("search pqe")
-    elif (len(search_jobtags) > 0):
+    
+    if (len(search_jobtags) > 0):
         sb = "job"
         print("search job")
         initial_search_results += searchby_job(search_jobtags)
+    elif (len(search_pqe) > 0):  # if search_pqe exists
+        initial_search_results += searchby_pqe(search_pqe)
+        sb = "pqe"
+        print("search pqe")
     elif (len(search_location) > 0):
         sb = "loc"
         print("search loc")
