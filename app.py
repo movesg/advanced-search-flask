@@ -35,7 +35,7 @@ def convert_json_to_text(list):
     listreturn = []
     for item in list:
         x = item.replace("\xa0", "")
-        listreturn.append(x)
+        listreturn = x.split(",")
     return listreturn
         
 def search_matched_results(search_pqe,search_jobtags,search_location):
