@@ -24,11 +24,11 @@ table_post = Table(AIRTABLE_API_KEY, POST_BASE_ID, POST_TABLE_ID)
 
 # Data Format function
 
-def format_data(result):
+def format_data(result,job_id):
     format_result=[]
     for item in result:
         fields = item.get("fields")
-        format_result.append({"Candidate ID": str(fields.get("Candidate ID"))})
+        format_result.append({"Candidate ID": str(fields.get("Candidate ID")),"Job ID":job_id})
     return format_result
 
 def convert_json_to_text(list):
@@ -38,7 +38,7 @@ def convert_json_to_text(list):
         listreturn = x.split(",")
     return listreturn
         
-def search_matched_results(search_pqe,search_jobtags,search_location):
+def search_matched_results(search_pqe,search_jobtags,search_location, job_id):
     #check if exist
     if(len(search_pqe)<=0): #if no values
         search_pqe.append("")
@@ -57,7 +57,7 @@ def search_matched_results(search_pqe,search_jobtags,search_location):
             for loc in search_location:
                 Formula = fm.AND(fm.match({"PQE": pqe}),fm.AND(fm.FIND(fm.STR_VALUE(job),fm.FIELD("Job Tags")),fm.FIND(fm.STR_VALUE(loc),fm.FIELD("Location"))))
                 list_results += table_candidates.all(formula=Formula)
-    list_results=format_data(list_results)
+    list_results=format_data(list_results,job_id)
     return list_results
 
 
@@ -83,16 +83,17 @@ def return_response():
     search_location = convert_json_to_text(search_location)
     print(search_location)
 
+    job_id = request.form.get("job_id")
+
     print("------------------\nGETTING RESULTS: \n------------------\n")
 
-    correct_results = search_matched_results(search_pqe,search_jobtags,search_location)
+    correct_results = search_matched_results(search_pqe,search_jobtags,search_location,job_id)
 
     print("# RESULTS FOUND: " + str(len(correct_results))+"\n---------------")
 
     print("POSTING TO AIRTABLE...")
     table_post.batch_create(correct_results, typecast=True)
-
-    print(str(len(correct_results)) +" RESULTS FOUND\nWITH KEYWORDS:\n"+str(search_pqe)+"\n"+str(search_jobtags)+"\n"+str(search_location)+"\nEND")
+    print(str(len(correct_results)) +" RESULTS FOUND\nWITH KEYWORDS:\n"+str(search_pqe)+"\n"+str(search_jobtags)+"\n"+str(search_location)+"\n========END========\n")
     ## Do something with the request.json data.
     return Response(status=200)
 
