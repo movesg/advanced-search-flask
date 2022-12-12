@@ -57,7 +57,7 @@ def search_matched_results(search_pqe,search_jobtags,search_location, job_id):
             for loc in search_location:
                 Formula = fm.AND(fm.match({"PQE": pqe}),fm.AND(fm.FIND(fm.STR_VALUE(job),fm.FIELD("Job Tags")),fm.FIND(fm.STR_VALUE(loc),fm.FIELD("Location"))))
                 list_results += table_candidates.all(formula=Formula)
-                print(list_results)
+                #print(list_results)
     list_results=format_data(list_results,job_id)
     return list_results
 
@@ -99,7 +99,7 @@ def return_response():
 
     correct_results = search_matched_results(search_pqe,search_jobtags,search_location,job_id)
 
-    print(correct_results)
+    print(len(correct_results))
     correct_results=match_pipelineID(correct_results)
 
     print("# RESULTS FOUND: " + str(len(correct_results))+"\n---------------")
