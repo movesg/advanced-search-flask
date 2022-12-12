@@ -57,10 +57,23 @@ def search_matched_results(search_pqe,search_jobtags,search_location, job_id):
             for loc in search_location:
                 Formula = fm.AND(fm.match({"PQE": pqe}),fm.AND(fm.FIND(fm.STR_VALUE(job),fm.FIELD("Job Tags")),fm.FIND(fm.STR_VALUE(loc),fm.FIELD("Location"))))
                 list_results += table_candidates.all(formula=Formula)
+                print(list_results)
     list_results=format_data(list_results,job_id)
     return list_results
 
 
+def match_pipelineID(corr_list):
+    pipelineID_list = []
+    return_list =[]
+    for corr in corr_list:
+        pipelineID = corr.get("Candidate ID")+corr.get("Job ID")
+        print(pipelineID)
+        res = table_post.all(formula = fm.match({"Pipeline ID":str(pipelineID)}))
+        if(len(res)==0): # if pipeline ID doesnt exists in table
+            return_list.append(corr)
+        else:
+            print("DUPLICATE DATA FOUND:")
+    return return_list
 
 @app.route('/my_webhook', methods=['POST'])
 def return_response():
@@ -69,17 +82,14 @@ def return_response():
 
     print("KEYWORD SEARCHES: \n---------------")
     search_pqe = request.form.getlist('PQE')
-    print(search_pqe)
     search_pqe = convert_json_to_text(search_pqe)
     print(search_pqe)
 
     search_jobtags = request.form.getlist('jobtags')
-    print(search_jobtags)
     search_jobtags = convert_json_to_text(search_jobtags)
     print(search_jobtags)
 
     search_location = request.form.getlist('location')
-    print(search_location)
     search_location = convert_json_to_text(search_location)
     print(search_location)
 
@@ -88,6 +98,9 @@ def return_response():
     print("------------------\nGETTING RESULTS: \n------------------\n")
 
     correct_results = search_matched_results(search_pqe,search_jobtags,search_location,job_id)
+
+    print(correct_results)
+    correct_results=match_pipelineID(correct_results)
 
     print("# RESULTS FOUND: " + str(len(correct_results))+"\n---------------")
 
