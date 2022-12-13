@@ -47,9 +47,9 @@ def search_matched_results(search_pqe,search_jobtags,search_location, job_id):
     if(len(search_location)<=0):
         search_location.append("")
 
-    print(len(search_pqe))
-    print(len(search_jobtags))
-    print(len(search_location))
+    #print(len(search_pqe))
+    #print(len(search_jobtags))
+    #print(len(search_location))
 
     list_results=[]
     for pqe in search_pqe:
@@ -62,17 +62,35 @@ def search_matched_results(search_pqe,search_jobtags,search_location, job_id):
     return list_results
 
 
-def match_pipelineID(corr_list):
-    pipelineID_list = []
+def delete_duplicates(corr_list,job_id):
     return_list =[]
-    for corr in corr_list:
-        pipelineID = corr.get("Candidate ID")+corr.get("Job ID")
-        print(pipelineID)
-        res = table_post.all(formula = fm.match({"Pipeline ID":str(pipelineID)}))
-        if(len(res)==0): # if pipeline ID doesnt exists in table
-            return_list.append(corr)
-        else:
-            print("DUPLICATE DATA FOUND:")
+    existing_candidate_list=[]
+    formula = fm.FIND(what = fm.STR_VALUE(job_id),where = fm.FIELD("Pipeline ID"))
+    res = table_post.all(formula=formula)
+
+    for item in res:
+        fields = item.get("fields")
+        existing_candidate_list.append({"Candidate ID": str(fields.get("Candidate ID (formula)"))})
+    #print(existing_candidate_list[0])
+
+
+    count_dupes=0
+    count_new=0
+    for cand in corr_list:
+        is_dupe = False
+        for exis in existing_candidate_list:
+            cand_id = cand.get("Candidate ID")
+            exis_id = exis.get("Candidate ID")
+            #print("AAAAAAAAa "+str(cand_id) + str(exis_id))
+
+            if cand_id==exis_id: #duplicate data
+                is_dupe=True
+                count_dupes+=1
+                break
+        if is_dupe==False: #new data
+            count_new+=1
+            return_list.append(cand)
+    print("WITHIN "+str(len(corr_list))+" RESULTS: "+str(count_new)+" NEW DATA; "+str(count_dupes)+" DUPLICATE DATA\n")
     return return_list
 
 @app.route('/my_webhook', methods=['POST'])
@@ -100,13 +118,15 @@ def return_response():
     correct_results = search_matched_results(search_pqe,search_jobtags,search_location,job_id)
 
     print(len(correct_results))
-    correct_results=match_pipelineID(correct_results)
 
-    print("# RESULTS FOUND: " + str(len(correct_results))+"\n---------------")
+    print("CHECKING FOR DUPLICATES......")
+    correct_results=delete_duplicates(correct_results,job_id)
+
+    print("# NEW RESULTS FOUND: " + str(len(correct_results))+"\n---------------")
 
     print("POSTING TO AIRTABLE...")
     table_post.batch_create(correct_results, typecast=True)
-    print(str(len(correct_results)) +" RESULTS FOUND\nWITH KEYWORDS:\n"+str(search_pqe)+"\n"+str(search_jobtags)+"\n"+str(search_location)+"\n========END========\n")
+    print(str(len(correct_results)) +" RESULTS POSTED\nWITH KEYWORDS:\n"+str(search_pqe)+"\n"+str(search_jobtags)+"\n"+str(search_location)+"\n========END========\n")
     ## Do something with the request.json data.
     return Response(status=200)
 
