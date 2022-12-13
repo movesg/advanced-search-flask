@@ -22,6 +22,7 @@ table_candidates = Table(AIRTABLE_API_KEY, AIRTABLE_BASE_ID, AIRTABLE_TABLE_ID)
 table_post = Table(AIRTABLE_API_KEY, POST_BASE_ID, POST_TABLE_ID)
 
 
+table_post.API_LIMIT=0.2
 # Data Format function
 
 def format_data(result,job_id):
@@ -93,6 +94,14 @@ def delete_duplicates(corr_list,job_id):
     print("WITHIN "+str(len(corr_list))+" RESULTS: "+str(count_new)+" NEW DATA; "+str(count_dupes)+" DUPLICATE DATA\n")
     return return_list
 
+def post_to_airtable(correct_results,max_result_limit):
+    if(len(correct_results)>int(max_result_limit)):
+        print("REQUEST LIMIT HIT,RETURN STATUS 400")
+        return False
+    else:
+        table_post.batch_create(correct_results, typecast=True)
+        return True
+
 @app.route('/my_webhook', methods=['POST'])
 def return_response():
     print("____________SEARCH STARTED___________")
@@ -111,6 +120,9 @@ def return_response():
     search_location = convert_json_to_text(search_location)
     print(search_location)
 
+    max_result_limit = request.form.get("MAX_RESULT_LIMIT")
+    print("MAX_RESULT_LIMIT = "+str(max_result_limit))
+
     job_id = request.form.get("job_id")
 
     print("------------------\nGETTING RESULTS: \n------------------\n")
@@ -125,7 +137,12 @@ def return_response():
     print("# NEW RESULTS FOUND: " + str(len(correct_results))+"\n---------------")
 
     print("POSTING TO AIRTABLE...")
-    table_post.batch_create(correct_results, typecast=True)
+    response = post_to_airtable(correct_results,max_result_limit=max_result_limit)
+    
+    if(response==False): # Response(status=400) #too many results found
+        return Response(status=400) 
+    
+    # SUCCESSFULLY POSTED TO AIRTABLE
     print(str(len(correct_results)) +" RESULTS POSTED\nWITH KEYWORDS:\n"+str(search_pqe)+"\n"+str(search_jobtags)+"\n"+str(search_location)+"\n========END========\n")
     ## Do something with the request.json data.
     return Response(status=200)
