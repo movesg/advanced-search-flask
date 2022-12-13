@@ -1,3 +1,5 @@
+# This script does...
+
 import pyairtable
 import pandas as pd
 from pyairtable import Table
@@ -21,8 +23,9 @@ POST_TABLE_ID = os.getenv("POST_TABLE_ID")
 table_candidates = Table(AIRTABLE_API_KEY, AIRTABLE_BASE_ID, AIRTABLE_TABLE_ID)
 table_post = Table(AIRTABLE_API_KEY, POST_BASE_ID, POST_TABLE_ID)
 
+# Add limiter in case too many API calls
+# table_post.API_LIMIT=0.2
 
-table_post.API_LIMIT=0.2
 # Data Format function
 
 def format_data(result,job_id):
