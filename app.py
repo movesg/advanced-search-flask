@@ -1,4 +1,4 @@
-# This script does...
+# This script receives webhooks from Make.com scenario (Generate results to pipeline (Python))
 
 import pyairtable
 import pandas as pd
@@ -20,14 +20,14 @@ AIRTABLE_TABLE_ID = os.getenv("AIRTABLE_TABLE_ID")
 POST_BASE_ID = os.getenv("POST_BASE_ID")
 POST_TABLE_ID = os.getenv("POST_TABLE_ID")
 
+# airtable tables
 table_candidates = Table(AIRTABLE_API_KEY, AIRTABLE_BASE_ID, AIRTABLE_TABLE_ID)
 table_post = Table(AIRTABLE_API_KEY, POST_BASE_ID, POST_TABLE_ID)
 
 # Add limiter in case too many API calls
 # table_post.API_LIMIT=0.2
 
-# Data Format function
-
+# Data Format to (candidate id : Job ID), returns list of dicts
 def format_data(result,job_id):
     format_result=[]
     for item in result:
@@ -35,6 +35,7 @@ def format_data(result,job_id):
         format_result.append({"Candidate ID": str(fields.get("Candidate ID")),"Job ID":job_id})
     return format_result
 
+#converts json string sent from make.com to text, returns list of search keywords
 def convert_json_to_text(list):
     listreturn = []
     for item in list:
@@ -42,6 +43,7 @@ def convert_json_to_text(list):
         listreturn = x.split(",")
     return listreturn
         
+# search airtable for matching results, returns list
 def search_matched_results(search_pqe,search_jobtags,search_location, job_id):
     #check if exist
     if(len(search_pqe)<=0): #if no values
@@ -65,7 +67,7 @@ def search_matched_results(search_pqe,search_jobtags,search_location, job_id):
     list_results=format_data(list_results,job_id)
     return list_results
 
-
+# check airtable for existing results and delete duplicates, returns list of unique rows
 def delete_duplicates(corr_list,job_id):
     return_list =[]
     existing_candidate_list=[]
@@ -80,31 +82,35 @@ def delete_duplicates(corr_list,job_id):
 
     count_dupes=0
     count_new=0
+
+    # check each data against existing rows
     for cand in corr_list:
         is_dupe = False
         for exis in existing_candidate_list:
             cand_id = cand.get("Candidate ID")
             exis_id = exis.get("Candidate ID")
-            #print("AAAAAAAAa "+str(cand_id) + str(exis_id))
-
-            if cand_id==exis_id: #duplicate data
+            
+            # compare for duplicate data
+            if cand_id==exis_id: # if data match, duplicate data, skip and go next data
                 is_dupe=True
                 count_dupes+=1
                 break
-        if is_dupe==False: #new data
+        if is_dupe==False: # data no match, add new data
             count_new+=1
             return_list.append(cand)
     print("WITHIN "+str(len(corr_list))+" RESULTS: "+str(count_new)+" NEW DATA; "+str(count_dupes)+" DUPLICATE DATA\n")
     return return_list
 
+# check if results list hits limit, then post to airtable, returns bool
 def post_to_airtable(correct_results,max_result_limit):
-    if(len(correct_results)>int(max_result_limit)):
+    if(len(correct_results)>int(max_result_limit)): # if hit limit, return false
         print("REQUEST LIMIT HIT,RETURN STATUS 400")
         return False
-    else:
+    else: # no hit limit, post to airtable and return true
         table_post.batch_create(correct_results, typecast=True)
         return True
 
+## MAIN FUNCTION: Run when webhook received
 @app.route('/my_webhook', methods=['POST'])
 def return_response():
     print("____________SEARCH STARTED___________")
@@ -141,6 +147,7 @@ def return_response():
     print("# NEW RESULTS FOUND: " + str(len(correct_results))+"\n---------------")
 
     print("POSTING TO AIRTABLE...")
+
     response = post_to_airtable(correct_results,max_result_limit=max_result_limit)
     
     if(response==False): # Response(status=400) #too many results found
