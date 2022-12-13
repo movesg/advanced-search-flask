@@ -123,6 +123,7 @@ def return_response():
     search_location = convert_json_to_text(search_location)
     print(search_location)
 
+    # Max result limit as defined in the Make webhook
     max_result_limit = request.form.get("MAX_RESULT_LIMIT")
     print("MAX_RESULT_LIMIT = "+str(max_result_limit))
 
